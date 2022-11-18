@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.bezkoder.spring.data.mongodb.model.Arbol;
 import com.bezkoder.spring.data.mongodb.model.Polla;
+import com.bezkoder.spring.data.mongodb.repository.ArbolRepository;
 import com.bezkoder.spring.data.mongodb.repository.PollaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,9 @@ public class TutorialController {
 
     @Autowired
     PollaRepository pollaRepository;
+
+    @Autowired
+    ArbolRepository arbolRepository;
 
     @GetMapping("/tutorials")
     public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {
@@ -137,5 +142,51 @@ public class TutorialController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    //Consultar el contador de árboles.
+    @GetMapping("/arboles")
+    public ResponseEntity<Arbol> getArbolById() {
+        Optional<Arbol> tutorialData = arbolRepository.findById("6377a62c91ebe60986669edf");
+
+        if (tutorialData.isPresent()) {
+            return new ResponseEntity<>(tutorialData.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    //Buscar y actializar el contador
+    @PutMapping("/arboles/incrementar")
+    public ResponseEntity<Arbol> updateArbol() {
+
+        Optional<Arbol> tutorialData = arbolRepository.findById("6377a62c91ebe60986669edf");
+
+
+        if (tutorialData.isPresent()) {
+            Arbol _tutorial = tutorialData.get();
+
+            int incrementar = _tutorial.getContador();
+            incrementar++;
+            _tutorial.setContador(incrementar);
+
+            return new ResponseEntity<>(arbolRepository.save(_tutorial), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    //Crar un árbol
+    @PostMapping("/arboles")
+    public ResponseEntity<Arbol> createArbol(@RequestBody Arbol arbolll) {
+        System.out.println("#######################: " + arbolll.getContador());
+        try {
+            Arbol _arbol = arbolRepository.save(new Arbol(arbolll.getContador()));
+            return new ResponseEntity<>(_arbol, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }
